@@ -1,0 +1,25 @@
+{
+  "name": "tricrypt",
+  "version": "1.0.0",
+  "description": "An encryptation command-line program",
+  "main": "main.js",
+  "scripts": {
+    "test": "jest"
+  },
+  "keywords": [
+    "encryptation",
+    "encrypt",
+    "cypher",
+    "security",
+    "secure",
+    "file",
+    "files",
+    "folder",
+    "folders"
+  ],
+  "author": "Thiago Della Libera Moreira",
+  "license": "MIT",
+  "devDependencies": {
+    "jest": "^23.4.2"
+  }
+}
