@@ -20,17 +20,18 @@ const argv = require('yargs')
     .epilog('LICENSE - MIT')
     .argv;
 
-const singleFileStrategy = require('./strategies/singleFile').singleFileStrategy;
+const singleFileStrategy = require('./strategies/singleFile');
 
 const input = argv.i || argv.input;
 const output = argv.o || argv.output;
 const recursive = argv.r || argv.recursive
 
-console.log('\n\n' + chalk.inverse.bold(' Welcome to tricrypt ;) '));
+console.log('\n\n' + chalk.white.bold(' Welcome to tricrypt ;) '));
 
 
 // Dealing with a single file
 if (!recursive) {
-  console.log('\n\n' + chalk.inverse.bold('File') + ' identified, applying ' + chalk.inverse.bold('single file strategy'));
+  console.log('\n\n' + chalk.white.bgCyan.bold('File') + ' identified, applying ' + chalk.white.bgCyan.bold('single file strategy'));
   singleFileStrategy(input, output);
+  
 }
