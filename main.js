@@ -1,37 +1,87 @@
 #!/usr/bin/env node
+const encryptStrategy = require('./strategies/encrypt');
+const decryptStrategy = require('./strategies/decrypt');
+
 const chalk = require('chalk');
 const argv = require('yargs')
-    .usage('Usage: $0 <command> [options]')
-    .command('encrypt', 'encrypts a file or folder')
-    .example('$0 encrypt -i ./path/to/an/input -o ./path/to/an/output -r')
-    .alias('i', 'input')
-    .nargs('i', 1)
-    .describe('i', 'A path to a file or folder')
-    .demandOption(['i'])
-    .alias('o', 'output')
-    .nargs('o', 1)
-    .describe('o', 'A path to a folder where the \n encrypted output will be saved')
-    .demandOption(['o'])
-    .boolean('r')
-    .alias('r', 'recursive')
-    .describe('r', 'If your input is a folder,\n the flag -r should be provided')
+    .usage('Usage: $0 <encrypt> [options]')
+    .command('encrypt', 'encrypts a file or folder',  function (yargs) {
+      yargs.option('input', {
+        alias: 'i',
+        demand: true,
+        describe: "A path to a file or folder",
+        type: "string"
+        // default: 'http://yargs.js.org/'
+      });
+      yargs.option('output', {
+        alias: 'o',
+        demand: true,
+        describe: "A path to a output folder",
+        type: "string"
+      });
+      yargs.option('password', {
+        alias: 'p',
+        demand: true,
+        describe: "Password to be used as cipher",
+        type: "string" 
+      });
+      yargs.option('recursive', {
+        alias: 'r',
+        demand: false,
+        describe: "If present, the program will encrypt\na folder provided as input",
+        type: "string"
+      });
+      return yargs
+    }, function(argv) {
+        sayWelcome();
+        const input = argv.i || argv.input;
+        const output = argv.o || argv.output;
+        const cipher = argv.p || argv.password;
+        const recursive = argv.r || argv.recursive
+        encryptStrategy(input, output, cipher, recursive);
+    })
+    .example('$0 encrypt -i ./path/to/an/input -o ./path/to/an/output -r')    
+    .command('decrypt', 'decrypts a file or folder',  function (yargs) {
+      yargs.option('input', {
+        alias: 'i',
+        demand: true,
+        describe: "A path to a encrypted file or folder",
+        type: "string"
+        // default: 'http://yargs.js.org/'
+      });
+      yargs.option('output', {
+        alias: 'o',
+        demand: true,
+        describe: "A path to a output folder",
+        type: "string"
+      });
+      yargs.option('password', {
+        alias: 'p',
+        demand: true,
+        describe: "Password to be used as decrypt cipher",
+        type: "string" 
+      });
+      yargs.option('recursive', {
+        alias: 'r',
+        demand: false,
+        describe: "If present, the program will encrypt\na folder provided as input",
+        type: "string"
+      });
+      return yargs
+    }, function(argv) {
+        sayWelcome();
+        const input = argv.i || argv.input;
+        const output = argv.o || argv.output;
+        const cipher = argv.p || argv.password;
+        const recursive = argv.r || argv.recursive
+        decryptStrategy(input, output, cipher, recursive);
+    })
+    .example('$0 encrypt -i ./path/to/an/input -o ./path/to/an/output -r')    
     .help('h')
     .alias('h', 'help')
     .epilog('LICENSE - MIT')
     .argv;
 
-const singleFileStrategy = require('./strategies/singleFile');
-
-const input = argv.i || argv.input;
-const output = argv.o || argv.output;
-const recursive = argv.r || argv.recursive
-
-console.log('\n\n' + chalk.white.bold(' Welcome to tricrypt ;) '));
-
-
-// Dealing with a single file
-if (!recursive) {
-  console.log('\n\n' + chalk.white.bgCyan.bold('File') + ' identified, applying ' + chalk.white.bgCyan.bold('single file strategy'));
-  singleFileStrategy(input, output);
-  
+function sayWelcome () {
+  console.log('\n\n\t' + chalk.white.bold('Welcome to tricrypt ;) '));  
 }
