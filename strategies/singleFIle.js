@@ -1,14 +1,26 @@
 const fs = require('fs');
 const path = require('path');
-function singleFileStrategy (input, output) {
+const tricrypt = require('../tricrypt/tricrypt');
+
+function singleFileStrategy (input, output, cipher, command) {
   if (!input || !output) 
     throw new Error('Please provide an input path and an output path');
   else {
     const parsedInput = this.normalizePath(input);
+    const parsedOutput = this.normalizePath(output);
+
     const inputExists = this.checkFile(parsedInput);
+    const outputExists = this.checkDir(parsedOutput);
+
+    const fileName = path.basename(parsedInput);
     
-    if (inputExists) {
-      
+    if (inputExists && outputExists && command === 'encrypt') {
+      let enc = tricrypt('aes256', cipher);
+      enc.encryptFile(input, output, fileName);      
+    } 
+    else if (inputExists && outputExists && command === 'decrypt') {
+      let dec = tricrypt('aes256', cipher);
+      dec.decryptFile(input, output, fileName);      
     } else {
       throw new Error('Input not found.');
     }
@@ -25,8 +37,12 @@ singleFileStrategy.prototype.checkFile = function (input) {
   return fs.statSync(input).isFile();
 };
 
-function init (input, output) {
-  return new singleFileStrategy(input, output);
+singleFileStrategy.prototype.checkDir = function (path) {
+  return fs.statSync(path).isDirectory();
+};
+
+function init (input, output, cipher, command) {
+  return new singleFileStrategy(input, output, cipher, command);
 }
 
 module.exports = init;
