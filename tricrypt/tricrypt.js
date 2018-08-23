@@ -6,9 +6,8 @@ const chalk = require('chalk');
 
 function tricrypt (method, cipher) {
   this.method = method;
-  this.cipher = cipher;
-  this.encMethod = crypto.createCipher(this.method, this.cipher);
-  this.decMethod = crypto.createDecipher(this.method, this.cipher);
+  this.cipher = crypto.createHash('sha256').update(cipher).digest('base64').substr(0, 32);
+  this.iv = new Buffer(crypto.randomBytes(16)).toString('hex').substr(0, 16);
 };
 
 tricrypt.prototype.encryptFile = function (input, output, fileName) {
@@ -17,6 +16,7 @@ tricrypt.prototype.encryptFile = function (input, output, fileName) {
   const baseName = fileName.split('.')[0];
   const mimetype = mime.lookup(fileName);
   const extension = mime.extension(mimetype);  
+  const encMethod = crypto.createCipheriv(this.method, this.cipher, this.iv);
   
   try {
     rs = fs.createReadStream(input);
@@ -25,7 +25,8 @@ tricrypt.prototype.encryptFile = function (input, output, fileName) {
     console.log('\n\n\t' + chalk.white.bgRed.bold('Error while trying creating streams'));
     console.log('\n\n\t' + error);    
   }
-  rs.pipe(this.encMethod).pipe(ws);  
+  ws.write(this.iv + '===tricrypt===');
+  rs.pipe(encMethod).pipe(ws);  
 };
 
 tricrypt.prototype.decryptFile = function (input, output, fileName) {
@@ -36,18 +37,22 @@ tricrypt.prototype.decryptFile = function (input, output, fileName) {
   const extension = mime.extension(mimetype);  
   
   try {
-    rs = fs.createReadStream(input);
+    rs = fs.createReadStream(input, {start: 0, end: 15, });
     ws = fs.createWriteStream(path.join(output, baseName + '.decrypted.' + extension));     
   } catch (error) {
     console.log('\n\n\t' + chalk.white.bgRed.bold('Error while trying creating streams'));
     console.log('\n\n\t' + error);    
   }
-  rs.pipe(this.decMethod).pipe(ws);  
+  rs.on('data', (data) => {
+    const iv = data;
+    this.decMethod = crypto.createDecipheriv(this.method, this.cipher, iv);
+    const originalrs = fs.createReadStream(input, {start: 30});
+    originalrs.pipe(this.decMethod).pipe(ws);
+  })
 };
 
 function init (method, cipher) {
   return new tricrypt(method, cipher);
 }
-
 
 module.exports = init;
