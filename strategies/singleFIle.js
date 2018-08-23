@@ -15,7 +15,7 @@ function singleFileStrategy (input, output, cipher, command) {
     const fileName = path.basename(parsedInput);
     
     if (inputExists && outputExists && command === 'encrypt') {
-      let enc = tricrypt('aes256', cipher);
+      let enc = tricrypt('aes-256-cbc', cipher);
       enc.encryptFile(input, output, fileName);      
     } 
     else if (inputExists && outputExists && command === 'decrypt') {
