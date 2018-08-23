@@ -19,7 +19,7 @@ function singleFileStrategy (input, output, cipher, command) {
       enc.encryptFile(input, output, fileName);      
     } 
     else if (inputExists && outputExists && command === 'decrypt') {
-      let dec = tricrypt('aes256', cipher);
+      let dec = tricrypt('aes-256-cbc', cipher);
       dec.decryptFile(input, output, fileName);      
     } else {
       throw new Error('Input not found.');
