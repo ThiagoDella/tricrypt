@@ -25,20 +25,13 @@ const argv = require('yargs')
         describe: "Password to be used as cipher",
         type: "string" 
       });
-      yargs.option('recursive', {
-        alias: 'r',
-        demand: false,
-        describe: "If present, the program will encrypt\na folder provided as input",
-        type: "string"
-      });
       return yargs
     }, function(argv) {
         sayWelcome();
         const input = argv.i || argv.input;
         const output = argv.o || argv.output;
         const cipher = argv.p || argv.password;
-        const recursive = argv.r || argv.recursive
-        encryptStrategy(input, output, cipher, recursive);
+        encryptStrategy(input, output, cipher);
     })
     .example('$0 encrypt -i ./path/to/an/input -o ./path/to/an/output -r')    
     .command('decrypt', 'decrypts a file or folder',  function (yargs) {
@@ -61,20 +54,13 @@ const argv = require('yargs')
         describe: "Password to be used as decrypt cipher",
         type: "string" 
       });
-      yargs.option('recursive', {
-        alias: 'r',
-        demand: false,
-        describe: "If present, the program will encrypt\na folder provided as input",
-        type: "string"
-      });
       return yargs
     }, function(argv) {
         sayWelcome();
         const input = argv.i || argv.input;
         const output = argv.o || argv.output;
         const cipher = argv.p || argv.password;
-        const recursive = argv.r || argv.recursive
-        decryptStrategy(input, output, cipher, recursive);
+        decryptStrategy(input, output, cipher);
     })
     .example('$0 encrypt -i ./path/to/an/input -o ./path/to/an/output -r')    
     .help('h')

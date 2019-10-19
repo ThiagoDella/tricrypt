@@ -4,12 +4,12 @@ const tricrypt = require('../tricrypt/tricrypt');
 const readdirp = require('readdirp');
 
 
-function singleFileStrategy(input, output, cipher, command) {
+function strategy(input, output, cipher, command) {
   if (!input || !output)
     throw new Error('Please provide an input path and an output path');
   else {
-    const parsedInput = normalizePath(input);
-    const parsedOutput = normalizePath(output);
+    const parsedInput = this.normalizePath(input);
+    const parsedOutput = this.normalizePath(output);
 
     const inputIsFile = this.checkFile(parsedInput);
     const inputIsDir = this.checkDir(parsedInput);
@@ -31,7 +31,7 @@ function singleFileStrategy(input, output, cipher, command) {
       readdirp(parsedInput, { alwaysStat: true })
       .on('data', (entry) => {
         const { path } = entry;
-        const fileName = path_mod.basename(normalizePath(path));
+        const fileName = path_mod.basename(this.normalizePath(path));
         enc.encryptFile(path_mod.join(parsedInput, fileName), parsedOutput, fileName)
       })
     }
@@ -40,7 +40,7 @@ function singleFileStrategy(input, output, cipher, command) {
       readdirp(parsedInput, { alwaysStat: true })
       .on('data', (entry) => {
         const { path } = entry;
-        const fileName = path_mod.basename(normalizePath(path));
+        const fileName = path_mod.basename(this.normalizePath(path));
         dec.decryptFile(path_mod.join(parsedInput, fileName), parsedOutput, fileName)
       })
     }
@@ -51,21 +51,21 @@ function singleFileStrategy(input, output, cipher, command) {
   }
 };
 
-singleFileStrategy.prototype.normalizePath = function(input) {
+strategy.prototype.normalizePath = function(input) {
   let relativePath = path_mod.normalize(input);
   return relativePath;
 };
 
-singleFileStrategy.prototype.checkFile = function (input) {
+strategy.prototype.checkFile = function (input) {
   return fs.statSync(input).isFile();
 };
 
-singleFileStrategy.prototype.checkDir = function (path) {
+strategy.prototype.checkDir = function (path) {
   return fs.statSync(path).isDirectory();
 };
 
 function init(input, output, cipher, command) {
-  return new singleFileStrategy(input, output, cipher, command);
+  return new strategy(input, output, cipher, command);
 }
 
 module.exports = init;

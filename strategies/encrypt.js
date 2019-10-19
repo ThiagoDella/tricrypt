@@ -1,13 +1,13 @@
 const chalk = require('chalk');
-const singleFileStrategy = require('./singleFile');
+const strategy = require('./strategy');
 
 function encryptStrategy(input, output, cipher) {
   console.log('\n\n\t' + chalk.white.bgCyan.bold('File') + ' identified, applying ' + chalk.white.bgCyan.bold('Encrypting...'));
-  singleFileStrategy(input, output, cipher, 'encrypt');
+  strategy(input, output, cipher, 'encrypt');
 }
 
 
-function init (input, output, cipher, recursive) {
+function init (input, output, cipher) {
   return new encryptStrategy(input, output, cipher);
 }
 
