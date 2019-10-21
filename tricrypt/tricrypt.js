@@ -17,16 +17,18 @@ tricrypt.prototype.encryptFile = function (input, output, fileName) {
   const mimetype = mime.lookup(fileName);
   const extension = mime.extension(mimetype);  
   const encMethod = crypto.createCipheriv(this.method, this.cipher, this.iv);
+  const destination = path.join(output, baseName + '.tricrypt.' + extension)
   
   try {
     rs = fs.createReadStream(input);
-    ws = fs.createWriteStream(path.join(output, baseName + '.tricrypt.' + extension));     
+    ws = fs.createWriteStream(destination);     
   } catch (error) {
     console.log('\n\n\t' + chalk.white.bgRed.bold('Error while trying creating streams'));
     console.log('\n\n\t' + error);    
   }
   ws.write(this.iv + '===tricrypt===');
-  rs.pipe(encMethod).pipe(ws);  
+  rs.pipe(encMethod).pipe(ws);
+  return destination;
 };
 
 tricrypt.prototype.decryptFile = function (input, output, fileName) {

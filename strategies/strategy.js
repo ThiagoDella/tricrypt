@@ -2,6 +2,8 @@ const fs = require('fs');
 const path_mod = require('path');
 const tricrypt = require('../tricrypt/tricrypt');
 const readdirp = require('readdirp');
+const archiver = require('archiver');
+const mime = require('mime-types');
 
 
 function strategy(input, output, cipher, command) {
@@ -28,21 +30,50 @@ function strategy(input, output, cipher, command) {
     }
     else if (inputIsDir && outputExists && command === 'encrypt') {
       let enc = tricrypt('aes-256-cbc', cipher);
+      let destinationNames = [];
+      const basename = path_mod.basename(parsedOutput);
+      const suffix = basename ? '.tricrypt.zip' : 'tricrypt.zip';
+      const zippedOutput = fs.createWriteStream(path_mod.join(parsedOutput, basename + suffix));
+
       readdirp(parsedInput, { alwaysStat: true })
-      .on('data', (entry) => {
-        const { path } = entry;
-        const fileName = path_mod.basename(this.normalizePath(path));
-        enc.encryptFile(path_mod.join(parsedInput, fileName), parsedOutput, fileName)
-      })
+        .on('data', (entry) => {
+          const { path } = entry;
+          const fileName = path_mod.basename(this.normalizePath(path));
+          destination = enc.encryptFile(path_mod.join(parsedInput, fileName), parsedOutput, fileName);
+          destinationNames.push(destination);
+        })
+        .on('end', () => {
+          // After all files have been encrypted, zip them together
+          var archive = archiver('zip', {
+            zlib: { level: 9 }
+          });
+          archive.pipe(zippedOutput);
+
+          destinationNames.forEach((value, index) => {
+            const destName = path_mod.basename(this.normalizePath(value));
+            const mimetype = mime.lookup(destName);
+            const extension = mime.extension(mimetype);
+            archive.file(value, { name: 'tricrypt-' + 'encrypted-' + (index + 1) + '.' + extension });
+          });
+
+          archive.finalize();
+        });
+
+      // Once the output is zipped, delete the remaining files
+      zippedOutput.on('close', () => {
+        destinationNames.forEach((value, _) => {
+          fs.unlinkSync(value);
+        });
+      });
     }
     else if (inputIsDir && outputExists && command === 'decrypt') {
       let dec = tricrypt('aes-256-cbc', cipher);
       readdirp(parsedInput, { alwaysStat: true })
-      .on('data', (entry) => {
-        const { path } = entry;
-        const fileName = path_mod.basename(this.normalizePath(path));
-        dec.decryptFile(path_mod.join(parsedInput, fileName), parsedOutput, fileName)
-      })
+        .on('data', (entry) => {
+          const { path } = entry;
+          const fileName = path_mod.basename(this.normalizePath(path));
+          dec.decryptFile(path_mod.join(parsedInput, fileName), parsedOutput, fileName)
+        })
     }
     else {
       throw new Error('Input not found.');
@@ -51,7 +82,7 @@ function strategy(input, output, cipher, command) {
   }
 };
 
-strategy.prototype.normalizePath = function(input) {
+strategy.prototype.normalizePath = function (input) {
   let relativePath = path_mod.normalize(input);
   return relativePath;
 };
