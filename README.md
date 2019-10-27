@@ -45,8 +45,6 @@ password | p | a password to be used as a cipher
 $ node main.js decrypt -i ~path/to/a/file.tricrypt.txt -o ~path/to/a/folder -p mypassword
 ```
 
-Tricrypt has the capability to encrypt and decrypt the folders. For encrypting/decrypting the folder the usage is
+Tricrypt has the capability to encrypt and decrypt folders. For encrypting/decrypting the folder the usage is
 the same as above. Tricrypt encrypts all the files in a folder and outputs the compressed zip of the encrypted files
-in the desired output directory. However, for decryption, you would need provide the path of the unzipped directory.
-
-The support to decrypt a zipped folder would be added in the near future.
+in the desired output directory. Decryption works the same way, you could either provide a zip or the unzipped folder.
