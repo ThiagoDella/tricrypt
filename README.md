@@ -6,8 +6,8 @@ A command-line file encrypt tool made using [Node.js](https://nodejs.org/en/)
 ## Actual state of this work
 - [x] Encrypt a single file
 - [x] Decrypt a single file
-- [ ] Encrypt a folder
-- [ ] Decrypt a folder
+- [x] Encrypt a folder
+- [x] Decrypt a folder
 
 ## Using tricrypt
  1. Download this source code
@@ -44,3 +44,9 @@ password | p | a password to be used as a cipher
 ```bash
 $ node main.js decrypt -i ~path/to/a/file.tricrypt.txt -o ~path/to/a/folder -p mypassword
 ```
+
+Tricrypt has the capability to encrypt and decrypt the folders. For encrypting/decrypting the folder the usage is
+the same as above. Tricrypt encrypts all the files in a folder and outputs the compressed zip of the encrypted files
+in the desired output directory. However, for decryption, you would need provide the path of the unzipped directory.
+
+The support to decrypt a zipped folder would be added in the near future.
