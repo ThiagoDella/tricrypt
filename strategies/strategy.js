@@ -4,6 +4,7 @@ const tricrypt = require('../tricrypt/tricrypt');
 const readdirp = require('readdirp');
 const archiver = require('archiver');
 const mime = require('mime-types');
+const unzipper = require('unzipper');
 
 
 function strategy(input, output, cipher, command) {
@@ -17,13 +18,15 @@ function strategy(input, output, cipher, command) {
     const inputIsDir = this.checkDir(parsedInput);
 
     const outputExists = this.checkDir(parsedOutput);
+    const isCompressed = parsedInput.indexOf('.zip') >= 0;
+
 
     if (inputIsFile && outputExists && command === 'encrypt') {
       const fileName = path_mod.basename(parsedInput);
       let enc = tricrypt('aes-256-cbc', cipher);
       enc.encryptFile(input, output, fileName);
     }
-    else if (inputIsFile && outputExists && command === 'decrypt') {
+    else if ((inputIsFile && !isCompressed) && outputExists && command === 'decrypt') {
       const fileName = path_mod.basename(parsedInput);
       let dec = tricrypt('aes-256-cbc', cipher);
       dec.decryptFile(input, output, fileName);
@@ -66,8 +69,26 @@ function strategy(input, output, cipher, command) {
         });
       });
     }
-    else if (inputIsDir && outputExists && command === 'decrypt') {
+    else if ((inputIsDir || isCompressed) && outputExists && command === 'decrypt') {
+      const fileName = path_mod.basename(parsedInput);
+      let outputFolder;
       let dec = tricrypt('aes-256-cbc', cipher);
+
+      if (isCompressed) {
+        outputFolder = parsedOutput + fileName.substring(0, fileName.indexOf('.zip')) + '.source';
+        fs.createReadStream(parsedInput).pipe(unzipper.Extract({ path: outputFolder })
+          .on('close', () => {
+            readdirp(outputFolder, { alwaysStat: true })
+              .on('data', (entry) => {
+                const { path } = entry;
+                const fileName = path_mod.basename(this.normalizePath(path));
+                const decryptFilePath = path_mod.join(outputFolder, fileName);
+                dec.decryptFile(decryptFilePath, parsedOutput, fileName);
+              })
+          }));
+        return;
+      }
+
       readdirp(parsedInput, { alwaysStat: true })
         .on('data', (entry) => {
           const { path } = entry;
